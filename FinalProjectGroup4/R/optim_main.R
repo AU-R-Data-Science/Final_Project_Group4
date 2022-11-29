@@ -1,31 +1,49 @@
-least_squares <- function(response, predictors, alpha)
+library(boot)
+
+ls_obj <- function(y, X)
 {
-  response <- as.vector(response)
-  predictors <- as.matrix(predictors)
-
-  n <- length(response)
-  p <- dim(predictors)[2]
-  df <- n - p
-
-  inv_pred <- solve(t(predictors) %*% predictors)
-  beta <- inv_pred %*% t(predictors) %*% response
-
-  residual <- response - predictors %*% as.matrix(beta)
-  sig2 <- (1/df) * t(residual) %*% residual
-  var_b <- sig2 * inv_pred
-
-  quantile <- 1 - alpha/2
-  ci <- c(beta - qnorm(p = quantile) * sqrt(var_b), beta + qnorm(p = quantile) * sqrt(var_b))
-
-  return(list(beta = beta, sigma2 = sig2, variance_beta = var_b, confidence_interval = ci))
+  solve(t(X)%*%X)%*%t(X)%*%y
 }
 
-optimize <- function(response, predictors, beta)
+loss <- function(y, X, beta)
 {
-  for (i in predictors)
-    {
-      p[i] <- 1 / (1 + exp(t(-1 * predictors[i]) * beta))
-    }
+  p <- c()
+  bh <- c()
+  n = length(y)
+  #X <- cbind(X, c(rep(1, n)))
+  for (i in 1:n)
+  {
+    p[i] <- 1 / (1 + exp(t(-X[i, ]) %*% beta))
+  }
+
+  for (i in 1:n)
+  {
+    bh[i] <- (-y[i] * log(p[i]) - (1 - y[i]) * log(1 - p[i]))
+  }
+
+  return(sum(bh))
+}
+
+optimize <- function(y, X)
+{
+  beta_est <- optim(par = ls_obj(y, X), loss, y = y, X = X)
+
+  out <- list("beta_hat" = beta_est, "response" = y, "predictors" = X)
+  return(out)
+}
+
+bootstrap_ci <- function(alpha, rounds = 20)
+{
+  beta_mat <- matrix(NA, B, )
+  #for (b in 1:rounds)
+  #{
+   # boot_data <-
+  # beta_mat[b, ] <- lm()$coefficients
+  #}
+
+ }
+
+  return(list(bootstrap_ci = boot_ci))
 }
 
 conf_matrix <- function()
