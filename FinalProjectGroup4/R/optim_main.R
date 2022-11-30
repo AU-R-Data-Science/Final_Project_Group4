@@ -2,6 +2,8 @@ library(boot)
 
 ls_obj <- function(y, X)
 {
+  y <- as.vector(y)
+  X <- as.matrix(X)
   solve(t(X)%*%X)%*%t(X)%*%y
 }
 
@@ -9,8 +11,8 @@ loss <- function(y, X, beta)
 {
   p <- c()
   bh <- c()
-  n = length(y)
-  #X <- cbind(X, c(rep(1, n)))
+  n <- length(y)
+
   for (i in 1:n)
   {
     p[i] <- 1 / (1 + exp(t(-X[i, ]) %*% beta))
@@ -38,6 +40,8 @@ loss <- function(y, X, beta)
 #' @export
 optimize <- function(y, X)
 {
+  n <- length(y)
+  X <- cbind(X, c(rep(1, n)))
   beta_est <- optim(par = ls_obj(y, X), loss, y = y, X = X)
 
   out <- list("beta_hat" = beta_est, "response" = y, "predictors" = X)
