@@ -1,0 +1,124 @@
+---
+title: "Final Project"
+author: "Festus"
+date: "11/22/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+sigmoid <- function(x){
+  return(1/(1 + exp(- x)))
+}
+```
+
+```{r}
+set.seed(233)
+n <- 1000
+p <- 1
+rx <- rnorm(n*p, 0, 1)
+x <- matrix(rx,ncol=p)
+beta <- rpois(p+1,3)
+y <- as.vector(round(sigmoid(beta%*%t(cbind(1,x))+rnorm(n, 0, 1))))
+```
+
+```{r}
+#cost function
+cost <- function(beta, X, y){
+  m <- length(y)
+  h <- sigmoid(X %*% beta)
+  J <- (t(-y)%*%log(h)-t(1-y)%*%log(1-h))/m #log likelihood function
+  return(J)
+}
+
+#gradient function: defines the slope of the LL function
+grad <- function(beta, X, y){
+  m <- length(y) 
+  
+  h <- sigmoid(X%*%beta)
+  grad <- (t(X)%*%(h - y))/m
+  return(grad)
+}
+
+Optim_log <- function(x, y) #minimizing the LL function using the optim function
+{
+  if(!is.matrix(x)){
+    x = as.matrix(x)
+  }
+  m <- dim(x)[1]
+  intercept <- rep(1, m)
+  x = cbind(intercept, x)
+  x_inverse <- solve(t(x)%*%x)
+  beta <- x_inverse%*%t(x)%*%y
+  costOpti <- optim(beta, fn = cost, gr = grad, X = x, y = y)
+  
+  return(costOpti$par)
+}
+```
+
+
+
+
+```{r}
+result <- Optim_log(x, y)
+result
+```
+
+
+
+```{r}    
+res1 <- glm(y~x,family = "binomial") #validating our function 
+summary(res1)
+```
+## Bootsrap Confidence Interval
+
+```{r}
+bootstrap_confi <- function(x, y, b=20, alpha = 0.05){
+  n <- dim(x)[1]
+  p <- dim(x)[2]
+  beta <- matrix(nrow = b, ncol = p+1)
+  
+  for (i in 1:b) {
+    draw <- sample(1:n, n, replace = TRUE)
+    boot_x <- x[draw,]
+    boot_y <- y[draw]
+    beta[i,] <- Optim_log(boot_x, boot_y)
+  }
+  
+  beta_mean <- apply(beta, 2, mean) 
+  beta_std_dev <- apply(beta, 2, sd) 
+  lower_bound <- beta_mean - qnorm(1 - alpha/2)*beta_std_dev
+  upper_bound <- beta_mean + qnorm(1 - alpha/2)*beta_std_dev
+  confi_interval <- cbind(beta_mean,lower_bound, upper_bound)
+  return(confi_interval)
+}
+```
+
+
+## Plotting the Predicted probabilities vrs. the true Data Points
+```{r}
+bootstrap_confi(x, y)
+```
+```{r}
+
+intercept <- rep(1, n)
+px = cbind(intercept, x)
+#data <- data.frame(y,intercept,x)
+z <- px%*%result #predicted probabilities 
+
+
+for (i in 1:dim(x)[2]){
+temp <- x[,i]
+otemp=temp[order(temp)]
+oz=z[order(temp)]
+plot(y ~ temp)
+lines(sigmoid(oz)~otemp, lwd=2, col="green")  
+}
+     
+```
+
+
