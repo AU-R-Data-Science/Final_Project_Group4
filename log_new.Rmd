@@ -1,0 +1,145 @@
+---
+title: "Final Project"
+author: "Group 4"
+date: "11/22/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+set.seed(233)
+n <- 1000
+p <- 5
+rx <- rnorm(n*p, 0, 1)
+x <- matrix(rx,ncol=p)
+y <- round(runif(n, 0, 1))
+```
+
+```{r cars}
+sigmoid <- function(x){
+  return(1/(1 + exp(- x)))
+}
+
+#cost function
+cost <- function(beta, X, y){
+  m <- length(y) # number of training examples
+  h <- sigmoid(X %*% beta)
+  J <- (t(-y)%*%log(h)-t(1-y)%*%log(1-h))/m
+  return(J)
+}
+
+#gradient function
+grad <- function(beta, X, y){
+  m <- length(y) 
+  
+  h <- sigmoid(X%*%beta)
+  grad <- (t(X)%*%(h - y))/m
+  return(grad)
+}
+
+
+# log_reg <- function(x, y, lambda = 1e-2){
+#   if(!is.matrix(x)){
+#     x = as.matrix(x)
+#   }
+#   m <- dim(x)[1]
+#   intercept <- rep(1, m)
+#   x = cbind(intercept, x)
+#   x_inverse <- solve(t(x)%*%x)
+#   beta_hat <- x_inverse%*%t(x)%*%y
+#   #print(t(beta_hat))
+#   beta_diff <- 1000
+#   i <- 1
+#   while (beta_diff > 1e-2 && i < 1e6) {
+#     beta_new <- beta_hat
+#     for(j in 1:m)
+#     {
+#       beta_new <- beta_new - t(lambda*(sigmoid(x[j,],beta_hat) - y[j])%*%x[j,])
+#     }
+#     beta_diff <- norm(beta_hat-beta_new ,type = "2")
+#     beta_hat <- beta_new
+#     #print(t(beta_hat))
+#     i <- i +1
+#     }
+#   return(list(x,beta_hat,i))
+# }
+# The gradient desecent method is not converging; so here is the function with optim.
+Optim_log <- function(x, y)
+{
+  if(!is.matrix(x)){
+    x = as.matrix(x)
+  }
+  m <- dim(x)[1]
+  intercept <- rep(1, m)
+  x = cbind(intercept, x)
+  x_inverse <- solve(t(x)%*%x)
+  beta <- x_inverse%*%t(x)%*%y
+  costOpti <- optim(beta, fn = cost, gr = grad, X = x, y = y)
+  
+  return(costOpti$par)
+}
+
+
+lin_reg <- function(x, y, lambda = 1e-2){
+  if(!is.matrix(x)){
+    x = as.matrix(x)
+  }
+  m <- dim(x)[1]
+  intercept <- rep(1, m)
+  x = cbind(intercept, x)
+  x_inverse <- solve(t(x)%*%x)
+  beta_hat <- x_inverse%*%t(x)%*%y
+  return(beta_hat)}
+```
+
+
+
+```{r}
+m <- dim(x)[1]
+intercept <- rep(1, m)
+X = cbind(intercept, x)
+res <- lin_reg(x, y)
+res - t(0.01*(y[1]-sigmoid(X[1,],res))%*%X[1,])
+```
+```{r}
+result <- Optim_log(x, y)
+result
+```
+
+```{r}
+res1 <- glm(y~x,family = "binomial")
+summary(res1)
+```
+## Boostrap Confidence Interval
+
+```{r}
+bootstrap_confi <- function(x, y, b=20, alpha = 0.05){
+  n <- dim(x)[1]
+  p <- dim(x)[2]
+  #concat <- cbind(x,y)
+  beta <- matrix(nrow = b, ncol = p+1)
+  for (i in 1:b) {
+    draw <- sample(1:n, n, replace = TRUE)
+    boot_x <- x[draw,]
+    boot_y <- y[draw]
+    beta[i,] <- Optim_log(boot_x, boot_y)
+  }
+       beta_mean <- apply(beta, 2, mean) 
+       beta_std_dev <- apply(beta, 2, sd) 
+       lower_bound <- beta_mean - qnorm(1 - alpha/2)*beta_std_dev
+       upper_bound <- beta_mean + qnorm(1 - alpha/2)*beta_std_dev
+       confi_interval <- cbind(beta_mean,rlower_bound, upper_bound)
+       return(confi_interval)
+          
+  
+}
+```
+
+```{r}
+bootstrap_confi(x, y)
+```
+
+
