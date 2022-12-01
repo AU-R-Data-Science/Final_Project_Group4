@@ -42,7 +42,7 @@ ls_optim <- function(y, X)
 {
   n <- length(y)
   X <- cbind(X, c(rep(1, n)))
-  beta_est <- optim(par = ls_obj(y, X), loss, y = y, X = X)
+  beta_est <- optim(par = ls_obj(y, X), loss, y = y, X = X)$par
 
   out <- list("beta_hat" = beta_est, "response" = y, "predictors" = X)
   return(out)
