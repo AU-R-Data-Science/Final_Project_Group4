@@ -77,7 +77,7 @@ bootstrap_ci <- function(alpha, rounds = 20)
 #' }
 #' @author Micheal Stewart Jackson
 #' @export
-  conf_matrix <- function(y, X, cutoff)
+  conf_matrix <- function(y, X, cutoff = 0.5)
   {
   optomize(y, X)
     predict <- ifelse(beta_est > cutoff, yes = 1, no = 0)
