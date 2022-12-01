@@ -1,0 +1,21 @@
+---
+title: "Logistic Regression Through Numerical Optimization"
+author: "Final Group 4"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Package Overview
+
+This R package contains functions designed to perform logistic regression on a user's chosen response and predictor data. This is done through estimating the coefficient vector $\beta$ and which contains response and predictor data and the intercept. This is done using the function
+$$
+\hat{\beta}\::=\underset{\beta}{\operatorname{argmin}}\sum_{i=1}^{n}(-y_{i}\cdot\ln(p_{i})-(1-y_{i})\cdot\ln(1-p_{i}))
+$$
+where
+$$
+p_{i}\::=\frac{1}{1+exp(-x_{i}^{T}\beta)}
+$$
