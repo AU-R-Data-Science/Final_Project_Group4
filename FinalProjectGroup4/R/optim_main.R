@@ -42,7 +42,7 @@ ls_optim <- function(y, X)
 {
   n <- length(y)
   X <- cbind(X, c(rep(1, n)))
-  beta_est <- optim(par = ls_obj(y, X), loss, y = y, X = X)$par
+  beta_est <- optim(par = ls_obj(y, X), loss, y = y, X = X)
 
   out <- list("beta_hat" = beta_est, "response" = y, "predictors" = X)
   return(out)
@@ -99,8 +99,19 @@ bootstrap_ci <- function(alpha, rounds = 20)
 return(list("Prevalence" = prev, "Accuracy" = acc, "Sensitivity" = tpr, "Specificity" = tnr, "False Discovery Rate" = fdr, "Diagnostic Odds Ratio" = dor))
   }
 
-  log_curve <- function()
+
+  log_curve <- function(y, X)
   {
+
+    #fit logistic regression model
+    model <- ls_optim(y,X)
+
+    #define new data frame that contains predictor variable
+    lr <- data.frame(X=seq(min(X), max(X),len=100))
+
+    #plot logistic regression curve
+    plot(y ~ seq(X), col="steelblue")
+    lines(y ~ X, lr, lwd=2)
 
   }
 
