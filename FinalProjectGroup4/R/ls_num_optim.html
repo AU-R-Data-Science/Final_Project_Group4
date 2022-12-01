@@ -11,7 +11,7 @@
 
 <meta name="author" content="Final Group 4" />
 
-<meta name="date" content="2022-11-30" />
+<meta name="date" content="2022-12-01" />
 
 <title>Logistic Regression Through Numerical Optimization</title>
 
@@ -359,7 +359,7 @@ display: none;
 <h1 class="title toc-ignore">Logistic Regression Through Numerical
 Optimization</h1>
 <h4 class="author">Final Group 4</h4>
-<h4 class="date">2022-11-30</h4>
+<h4 class="date">2022-12-01</h4>
 
 </div>
 
@@ -373,7 +373,11 @@ predictor data and the intercept. This is done using the function <span class="m
 \hat{\beta}\::=\underset{\beta}{\operatorname{argmin}}\sum_{i=1}^{n}(-y_{i}\cdot\ln(p_{i})-(1-y_{i})\cdot\ln(1-p_{i}))
 \]</span> where <span class="math display">\[
 p_{i}\::=\frac{1}{1+exp(-x_{i}^{T}\beta)}
-\]</span></p>
+\]</span> with <span class="math inline">\(y_{i}\)</span> representing
+the <span class="math inline">\(i^{\text{th}}\)</span> observation of
+the response and <span class="math inline">\(x_{i}\)</span> representing
+the <span class="math inline">\(i^{\text{th}}\)</span> row of the
+predictors.</p>
 </div>
 
 

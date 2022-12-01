@@ -19,3 +19,5 @@ where
 $$
 p_{i}\::=\frac{1}{1+exp(-x_{i}^{T}\beta)}
 $$
+with $y_{i}$ representing the $i^{\text{th}}$ observation of the response and $x_{i}$ representing the $i^{\text{th}}$ row of the predictors.
+

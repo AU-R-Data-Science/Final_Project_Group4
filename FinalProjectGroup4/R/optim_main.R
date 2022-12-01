@@ -38,7 +38,7 @@ loss <- function(y, X, beta)
 #' }
 #' @author Mauren Baker
 #' @export
-optimize <- function(y, X)
+ls_optim <- function(y, X)
 {
   n <- length(y)
   X <- cbind(X, c(rep(1, n)))
@@ -79,23 +79,23 @@ bootstrap_ci <- function(alpha, rounds = 20)
 #' @export
   conf_matrix <- function(y, X, cutoff = 0.5)
   {
-  optomize(y, X)
+  ls_optim(y, X)
     predict <- ifelse(beta_est > cutoff, yes = 1, no = 0)
   cm <- table(y, predict) # confusion matrix
-  
+
   tp <- cm[1, 1] # Number of true positives
   fn <- cm[1, 2] # Number of false negatives
   fp <- cm[2, 1] # Number of false positives
   tn <- cm[2, 2] # Number of true negatives
-  
+
   prev <- (tp+fp)/(tp+fp+fn+tn)
   acc <- (tp+tn)/(tp+fp+tn+fn)
   tpr <- tp/(tp+fn)
   tnr <- tn/(tn+fp)
   fdr <- fp/(fp+tp)
   dor <- (tpr/(1-tnr))/((1-tpr)/tnr)
-  
-  
+
+
 return(list("Prevalence" = prev, "Accuracy" = acc, "Sensitivity" = tpr, "Specificity" = tnr, "False Discovery Rate" = fdr, "Diagnostic Odds Ratio" = dor))
   }
 
