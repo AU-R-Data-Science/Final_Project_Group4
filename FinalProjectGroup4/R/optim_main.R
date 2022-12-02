@@ -42,7 +42,7 @@ ls_optim <- function(y, X)
 {
   n <- length(y)
   X <- cbind(X, c(rep(1, n)))
-  beta_est <- optim(par = ls_obj(y, X), loss, y = y, X = X)
+  beta_est <- optim(par = ls_obj(y, X), loss, y = y, X = X)$par
 
   out <- list("beta_hat" = beta_est, "response" = y, "predictors" = X)
   return(out)
@@ -70,7 +70,7 @@ bootstrap_ci <- function(y, X, alpha = .05, rounds = 20)
     boot_data <- data[sample(1:nrow(data), nrow(data), replace = TRUE), ]
     y2 <- boot_data[ , 1]
     X2 <- boot_data[ , 2]
-    beta_mat[b, ] <- ls_optim(y2, X2)$beta_hat$par
+    beta_mat[b, ] <- ls_optim(y2, X2)$beta_hat
   }
   boot_ci_int <- quantile(beta_mat[ , 1], c(alpha/2, 1-alpha/2))
   boot_ci_slope <- quantile(beta_mat[ , 2], c(alpha/2, 1-alpha/2))

@@ -21,9 +21,59 @@ p_{i}\::=\frac{1}{1+exp(-x_{i}^{T}\beta)}
 $$
 with $y_{i}$ representing the $i^{\text{th}}$ observation of the response and $x_{i}$ representing the $i^{\text{th}}$ row of the predictors.
 
+## Functions and Examples: Adult Data
+```{r include=TRUE, echo = FALSE}
+gender <- c(1,1,1,1,0,0,0,1,0,1,1,1,0,1,1,1,1,1,1,0,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,0,1,1,1,1,1,1,0,1,1,1,0,1,0,0,1,1,1,0,1,0,0,0,1,1,1,1,0,1,1,1,0,0,1,1,0,1,0,1,1,1,1,0,0,1,1,1,1,1,0,1,1,1,1,0,0,1,1,1,0,0,1,1,0,1,1,0,1,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,0,0,0,1,0,1,1,1,1,1,1,0,1,1)
+income <- c(77516,83311,215646,234721,338409,284582,160187,209642,45781,159449,280464,141297,122272,205019,121772,245487,176756,186824,28887,292175,193524,302146,76845,117037,109015,216851,168294,180211,367260,193366,190709,266015,386940,59951,311512,242406,197200,544091,84154,265477,507875,88506,172987,94638,289980,337895,144361,128354,101603,271466,32275,226956,51835,251585,109832,237993,216666,56352,147372,188146,59496,293936,149640,116632,105598,155537,183175,169846,191681,200681,101509,309974,162298,211678,124744,213921,32214,212759,309634,125927,446839,276515,51618,159937,343591,346253,268234,202051,54334,410867,249977,286730,212563,117747,226296,115585,191277,202683,171095,249409,124191,198282,149116,188300,103432,317660,304873,194901,189265,124692,432376,65324,335605,377869,102864,95647,303090,197371,247552,102632,199915,118853,77143,267989,301606,287828,111697,114937,129305,365739,69621,43323,120985,254202,146195,125933,56920,163127,34310,81973,66614,232782,316868,196584,105376,185814,175374,108293,181232,174662,186009,198183,163003,296158,252903,187715,214542,494223,191535,228456,38317,252752,78374,88419,201080,207157,235485,102628,25828,54826,124953,175325,96062,428030,149624,253814,312956,483777,183930,37274,181344,114580,633742,286370,29054,304030,143129,135105,99928,109567,155222,159567,523910,120939,130760,197387,99374,56795,138992,32921)
+```
+**Gender**: binary vector of size 200 with 0 = Female and 1 = Male
+
+**Income**: vector of size 200 containing the corresponding incomes
+
 #### ls_optim
 The least squares optimizer uses a standard approach to a regression analysis. The ls_optim function works on finding how gender affects income.
-```{r ls_optim, include = FALSE, echo = TRUE}
+```{r ls_optim1, include = FALSE, echo = TRUE}
+
+library(boot)
+
+ls_obj <- function(y, X)
+{
+  y <- as.vector(y)
+  X <- as.matrix(X)
+  solve(t(X)%*%X)%*%t(X)%*%y
+}
+
+loss <- function(y, X, beta)
+{
+  p <- c()
+  bh <- c()
+  n <- length(y)
+
+  for (i in 1:n)
+  {
+    p[i] <- 1 / (1 + exp(t(-X[i, ]) %*% beta))
+  }
+
+  for (i in 1:n)
+  {
+    bh[i] <- (-y[i] * log(p[i]) - (1 - y[i]) * log(1 - p[i]))
+  }
+
+  return(sum(bh))
+}
+
+ls_optim <- function(y, X)
+{
+  n <- length(y)
+  X <- cbind(X, c(rep(1, n)))
+  beta_est <- optim(par = ls_obj(y, X), loss, y = y, X = X)$par
+
+  out <- list("beta_hat" = beta_est, "response" = y, "predictors" = X)
+  return(out)
+}
+```
+
+```{r ls_optim2, include = TRUE, echo = TRUE}
 
 ls_optim(gender, income)
 
@@ -31,7 +81,26 @@ ls_optim(gender, income)
 
 #### bootstrap_ci
 The bootstrap intervals helps to focus on random sampling with replacement.
-```{r bootstrap_ci, include = FALSE, echo = TRUE}
+```{r bootstrap_ci1, include = FALSE, echo = TRUE}
+
+bootstrap_ci <- function(y, X, alpha = .05, rounds = 20)
+{
+  beta_mat <- matrix(NA, rounds, 2)
+  data <- data.frame("y" = y, "X" = X)
+  for (b in 1:rounds)
+  {
+    boot_data <- data[sample(1:nrow(data), nrow(data), replace = TRUE), ]
+    y2 <- boot_data[ , 1]
+    X2 <- boot_data[ , 2]
+    beta_mat[b, ] <- ls_optim(y2, X2)$beta_hat
+  }
+  boot_ci_int <- quantile(beta_mat[ , 1], c(alpha/2, 1-alpha/2))
+  boot_ci_slope <- quantile(beta_mat[ , 2], c(alpha/2, 1-alpha/2))
+  return(list("Bootstrap Confidence Interval For Intercept Coefficient"=boot_ci_int, "Bootstrap Confidence Interval For Slope Coefficient"=boot_ci_slope))
+}
+
+```
+```{r bootstrap_ci2, include = TRUE, echo = TRUE}
 
 bootstrap_ci(gender, income, alpha = 0.05, rounds = 20)
 
@@ -40,7 +109,64 @@ bootstrap_ci(gender, income, alpha = 0.05, rounds = 20)
 
 #### conf_matrix
 The confusion matrix shows the performance of the ls_optim algorithm in a table. 
-```{r conf_matrix, include = FALSE, echo = TRUE}
+```{r conf_matrix1, include = FALSE, echo = TRUE}
+
+conf_matrix <- function(y, X, alpha = .05, cutoff = 0.5)
+{
+
+
+  int_coeff <- mean(bootstrap_ci(y, X, alpha)$"Bootstrap Confidence Interval For Intercept Coefficient")
+  slope_coeff <- mean(bootstrap_ci(y, X, alpha)$"Bootstrap Confidence Interval For Slope Coefficient")
+
+  log_odds <- int_coeff + slope_coeff * X
+  probabilities <- exp(log_odds)/(1+exp(log_odds))
+  predict <- ifelse(probabilities > cutoff, yes = 1, no = 0)
+
+  tp <- 0 # Number of true positives
+  fn <- 0 # Number of false negatives
+  fp <- 0 # Number of false positives
+  tn <- 0 # Number of true negatives
+
+  for (i in 1:length(y))
+  {
+    if (y[i] < .5 & predict[i] < .5)
+    {
+      tn <- tn +1
+    }
+    if (y[i] < .5 & predict[i] > .5)
+    {
+      fp <- fp +1
+    }
+    if (y[i] > .5 & predict[i] > .5)
+    {
+      tp <- tp +1
+    }
+    if (y[i] > .5 & predict[i] < .5)
+    {
+      fn <- fn +1
+    }
+  }
+
+  row1 <- c(tp, fn)
+  row2 <- c(fp, tn)
+  cm <-  rbind(row1, row2)# confusion matrix
+  lab <- c(1,0)
+  rownames(cm) <- lab
+  colnames(cm) <- lab
+
+  prev <- (tp+fp)/(tp+fp+fn+tn)
+  acc <- (tp+tn)/(tp+fp+tn+fn)
+  tpr <- tp/(tp+fn)
+  tnr <- tn/(tn+fp)
+  fdr <- fp/(fp+tp)
+  dor <- (tpr/(1-tnr))/((1-tpr)/tnr)
+
+
+  return(list("Confusion Matrix" = cm, "Prevalence" = prev, "Accuracy" = acc, "Sensitivity" = tpr, "Specificity" = tnr, "False Discovery Rate" = fdr, "Diagnostic Odds Ratio" = dor))
+}
+
+```
+```{r conf_matrix2, include = TRUE, echo = TRUE}
 
 conf_matrix(gender, income, alpha = 0.05, cutoff = 0.5)
 
@@ -48,16 +174,57 @@ conf_matrix(gender, income, alpha = 0.05, cutoff = 0.5)
 
 #### log_curve
 The log curve uses the ls_optim function to demonstrate a logistic curve in a plot.
-```{r log_curve, include = FALSE, echo = TRUE}
+```{r log_curve1, include = FALSE, echo = TRUE}
+log_curve<- function(X, y)
+{
+
+  #fit logistic regression model
+  model <- ls_optim(y,X)
+
+  #define new data frame that contains predictor variable
+  newdata <- data.frame(X=seq(min(X), max(X),len=100))
+
+  #use fitted model to predict values
+  p <- as.vector((model$beta_hat[1,])%*%(X))
+
+  #plot logistic regression curve
+  plot(y ~ X, col="steelblue", main = "Logistic Regression Curve", xlab= "X", ylab = "p")
+  lines(p ~ X)
+
+}
+```
+
+```{r log_curve2, include = TRUE, echo = TRUE}
 log_curve(income, gender)
 ```
 
 #### plot_metrics
 The plot metrics uses the conf_matrix function to show the plot of accuracy in the confusion metrics. 
-```{r plot_metrics, include = FALSE, echo = TRUE}
+```{r plot_metrics1, include = FALSE, echo = TRUE}
+
+plot_metrics <- function(y, X, alpha = 0.05)
+{
+
+  cut_off <- seq(0.1, 0.9, by = 0.1)
+  acc1 <- conf_matrix(y,X,alpha, cutoff = 0.1)
+  acc2 <- conf_matrix(y,X,alpha, cutoff = 0.2)
+  acc3 <- conf_matrix(y,X,alpha, cutoff = 0.3)
+  acc4 <- conf_matrix(y,X,alpha, cutoff = 0.4)
+  acc5 <- conf_matrix(y,X,alpha, cutoff = 0.5)
+  acc6 <- conf_matrix(y,X,alpha, cutoff = 0.6)
+  acc7 <- conf_matrix(y,X,alpha, cutoff = 0.7)
+  acc8 <- conf_matrix(y,X,alpha, cutoff = 0.8)
+  acc9 <- conf_matrix(y,X,alpha, cutoff = 0.9)
+  accuracy <- cbind(acc1$Accuracy, acc2$Accuracy, acc3$Accuracy, acc4$Accuracy, acc5$Accuracy, acc6$Accuracy, acc7$Accuracy, acc8$Accuracy, acc9$Accuracy)
+  plot(cut_off, accuracy, main= "Accuracy vs Cutoff value", xlab = "Cutoff", ylab = "Accuracy")
+  lines(cut_off, accuracy)
+
+}
+
+```
+```{r plot_metrics2, include = TRUE, echo = TRUE}
 
 plot_metrics(gender, income, alpha = 0.05)
 
 ```
 
-## Example: ___ Data
