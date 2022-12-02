@@ -95,9 +95,9 @@ bootstrap_ci <- function(y, X, alpha = .05, rounds = 20)
 #' }
 #' @author Micheal Stewart Jackson
 #' @export
-  conf_matrix <- function(y, X, seed, alpha = .05, cutoff = 0.5)
+  conf_matrix <- function(y, X, alpha = .05, cutoff = 0.5)
   {
-    set.seed(seed)
+  
     
   int_coeff <- mean(bootstrap_ci(y, X, alpha)$"Bootstrap Confidence Interval For Intercept Coefficient")
   slope_coeff <- mean(bootstrap_ci(y, X, alpha)$"Bootstrap Confidence Interval For Slope Coefficient")
