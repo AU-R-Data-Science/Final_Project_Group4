@@ -157,53 +157,58 @@ conf_matrix <- function(y, X, alpha = .05, cutoff = 0.5)
 #' @param alpha A \code{double} value indicating the significance level of the confidence intervals for the logistic regression coefficients.
 #' @return A \code{list} containing the following objects:
 #' \describe{
-#'  \item{model}{}
+#'  \item{cut_off}{Creates the cutoff values from 0.1 to 0.9 that goes by 0.1}
+#'  \item{acc}{Uses the conf_matrix function to find the new data with a different cutoff value}
+#'  \item{accuracy}{Uses cbind to place all of the acc$accuracy into one row to make it easier to plot}
 #' }
 #' @author Kayla Gallman
 #' @export
-plot_metrics <- function(y, X, alpha = 0.5)
+plot_metrics <- function(y, X, alpha = 0.05)
 {
 
   cut_off <- seq(0.1, 0.9, by = 0.1)
-  for (i in 1:length(cut_off)){
-    co <- cut_off[i]
-    Confusion <- conf_matrix(y,X, alpha = 0.5, cutoff = co)
-  }
-  plot(cut_off, Confusion$Accuracy)
+  acc1 <- conf_matrix(y,X,alpha, cutoff = 0.1)
+  acc2 <- conf_matrix(y,X,alpha, cutoff = 0.2)
+  acc3 <- conf_matrix(y,X,alpha, cutoff = 0.3)
+  acc4 <- conf_matrix(y,X,alpha, cutoff = 0.4)
+  acc5 <- conf_matrix(y,X,alpha, cutoff = 0.5)
+  acc6 <- conf_matrix(y,X,alpha, cutoff = 0.6)
+  acc7 <- conf_matrix(y,X,alpha, cutoff = 0.7)
+  acc8 <- conf_matrix(y,X,alpha, cutoff = 0.8)
+  acc9 <- conf_matrix(y,X,alpha, cutoff = 0.9)
+  accuracy <- cbind(acc1$Accuracy, acc2$Accuracy, acc3$Accuracy, acc4$Accuracy, acc5$Accuracy, acc6$Accuracy, acc7$Accuracy, acc8$Accuracy, acc9$Accuracy)
+  plot(cut_off, accuracy, main= "Accuracy vs Cutoff value", xlab = "Cutoff", ylab = "Accuracy")
+  lines(cut_off, accuracy)
 
 }
-
-set.seed(1)
-y <- sample(c(0,1), size = 100, replace = TRUE)
-X <- round(runif(100, 18, 80))
-
 
 #' Create a fitted logistic curve
 #' @description This function shows a visual of the logistic regression
 #' @param y A \code{double} value of the vector containing the response of interest.
 #' @param X An \eqn{n \times p} \code{double} value of the matrix containing the values of the predictors.
-#' @param beta A \code{double} value that has previously been found with the ls_optim function.
 #' @return A \code{list} containing the following objects:
 #' \describe{
 #'  \item{model}{fit of the logistic regression model}
+#'  \item{newdata}{creates a data frame that puts X in order}
+#'  \item{p}{creates the probability}
 #' }
 #' @author Kayla Gallman
 #' @export
-log_curve<- function(X, y, beta)
+log_curve<- function(X, y)
 {
 
   #fit logistic regression model
   model <- ls_optim(y,X)
 
   #define new data frame that contains predictor variable
-  newdata <- data.frame(X=seq(min(X), max(X),len=500))
+  newdata <- data.frame(X=seq(min(X), max(X),len=100))
 
-  #use fitted model to predict values of vs
-
-  p <- 1/exp(-y*X)
+  #use fitted model to predict values
+  p <- as.vector((model$beta_hat[1,])%*%(X))
 
   #plot logistic regression curve
-  plot(y ~ X, col="steelblue")
-  lines(y ~ X, newdata, lwd=2)
+  plot(y ~ X, col="steelblue", main = "Logistic Regression Curve", xlab= "X", ylab = "p")
+  lines(p ~ X)
 
 }
+

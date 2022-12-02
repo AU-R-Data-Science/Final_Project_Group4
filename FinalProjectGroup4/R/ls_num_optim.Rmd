@@ -21,16 +21,43 @@ p_{i}\::=\frac{1}{1+exp(-x_{i}^{T}\beta)}
 $$
 with $y_{i}$ representing the $i^{\text{th}}$ observation of the response and $x_{i}$ representing the $i^{\text{th}}$ row of the predictors.
 
-### Functions
+#### ls_optim
+The least squares optimizer uses a standard approach to a regression analysis. The ls_optim function works on finding how gender affects income.
+```{r ls_optim, include = FALSE, echo = TRUE}
 
-##### ls_optim
+ls_optim(gender, income)
 
-##### bootstrap_ci
+```
 
-##### conf_matrix
+#### bootstrap_ci
+The bootstrap intervals helps to focus on random sampling with replacement.
+```{r bootstrap_ci, include = FALSE, echo = TRUE}
 
-##### log_curve
+bootstrap_ci(gender, income, alpha = 0.05, rounds = 20)
 
-##### plot_metrics
+```
+
+
+#### conf_matrix
+The confusion matrix shows the performance of the ls_optim algorithm in a table. 
+```{r conf_matrix, include = FALSE, echo = TRUE}
+
+conf_matrix(gender, income, alpha = 0.05, cutoff = 0.5)
+
+```
+
+#### log_curve
+The log curve uses the ls_optim function to demonstrate a logistic curve in a plot.
+```{r log_curve, include = FALSE, echo = TRUE}
+log_curve(income, gender)
+```
+
+#### plot_metrics
+The plot metrics uses the conf_matrix function to show the plot of accuracy in the confusion metrics. 
+```{r plot_metrics, include = FALSE, echo = TRUE}
+
+plot_metrics(gender, income, alpha = 0.05)
+
+```
 
 ## Example: ___ Data
