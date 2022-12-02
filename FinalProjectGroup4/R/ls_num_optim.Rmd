@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Package Overview
+# Package Overview
 
 This R package contains functions designed to perform logistic regression on a user's chosen response and predictor data. This is done through estimating the coefficient vector $\beta$ and which contains response and predictor data and the intercept. This is done using the function
 $$
@@ -21,3 +21,16 @@ p_{i}\::=\frac{1}{1+exp(-x_{i}^{T}\beta)}
 $$
 with $y_{i}$ representing the $i^{\text{th}}$ observation of the response and $x_{i}$ representing the $i^{\text{th}}$ row of the predictors.
 
+### Functions
+
+##### ls_optim
+
+##### bootstrap_ci
+
+##### conf_matrix
+
+##### log_curve
+
+##### plot_metrics
+
+## Example: ___ Data
