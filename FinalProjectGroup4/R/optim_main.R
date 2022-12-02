@@ -81,6 +81,7 @@ bootstrap_ci <- function(y, X, alpha = .05, rounds = 20)
 #' @description This function provides and uses a confusion matrix to assess how closely an optimization technique models the data presented.
 #' @param y A \code{double} value of the vector containing the response of interest.
 #' @param X An \eqn{n \times p} \code{double} value of the matrix containing the values of the predictors.
+#' @param alpha A \code{double} value indicating the significance level of the confidence intervals for the logistic regression coefficients.
 #' @param cutoff A \code{double} value that sets the probability which determines the predicticted classification of the data set.
 #' @return A \code{list} containing the following objects:
 #' \describe{
