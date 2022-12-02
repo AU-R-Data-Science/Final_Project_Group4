@@ -35,11 +35,41 @@ income <- c(77516,83311,215646,234721,338409,284582,160187,209642,45781,159449,2
 **Income**: vector of size 200 containing the corresponding incomes
 
 #### ls_optim
+The least squares optimizer uses a standard approach to a regression analysis. The ls_optim function works on finding how gender affects income.
+```{r ls_optim, include = FALSE, echo = TRUE}
+
+ls_optim(gender, income)
+
+```
 
 #### bootstrap_ci
+The bootstrap intervals helps to focus on random sampling with replacement.
+```{r bootstrap_ci, include = FALSE, echo = TRUE}
+
+bootstrap_ci(gender, income, alpha = 0.05, rounds = 20)
+
+```
+
 
 #### conf_matrix
+The confusion matrix shows the performance of the ls_optim algorithm in a table. 
+```{r conf_matrix, include = FALSE, echo = TRUE}
+
+conf_matrix(gender, income, alpha = 0.05, cutoff = 0.5)
+
+```
 
 #### log_curve
+The log curve uses the ls_optim function to demonstrate a logistic curve in a plot.
+```{r log_curve, include = FALSE, echo = TRUE}
+log_curve(income, gender)
+```
 
 #### plot_metrics
+The plot metrics uses the conf_matrix function to show the plot of accuracy in the confusion metrics. 
+```{r plot_metrics, include = FALSE, echo = TRUE}
+
+plot_metrics(gender, income, alpha = 0.05)
+
+```
+

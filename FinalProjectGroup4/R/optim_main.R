@@ -42,7 +42,7 @@ ls_optim <- function(y, X)
 {
   n <- length(y)
   X <- cbind(X, c(rep(1, n)))
-  beta_est <- optim(par = ls_obj(y, X), loss, y = y, X = X)
+  beta_est <- optim(par = ls_obj(y, X), loss, y = y, X = X)$par
 
   out <- list("beta_hat" = beta_est, "response" = y, "predictors" = X)
   return(out)
@@ -163,21 +163,21 @@ return(list("Confusion Matrix" = cm, "Prevalence" = prev, "Accuracy" = acc, "Sen
   #' }
   #' @author Kayla Gallman
   #' @export
-  plot_metrics <- function(y, X, alpha = 0.5)
+  plot_metrics <- function(y, X, alpha = 0.05)
   {
 
    cut_off <- seq(0.1, 0.9, by = 0.1)
-   acc1 <- conf_matrix(y,X,alpha = 0.5, cutoff = 0.1)
-   acc2 <- conf_matrix(y,X,alpha = 0.5, cutoff = 0.2)
-   acc3 <- conf_matrix(y,X,alpha = 0.5, cutoff = 0.3)
-   acc4 <- conf_matrix(y,X,alpha = 0.5, cutoff = 0.4)
-   acc5 <- conf_matrix(y,X,alpha = 0.5, cutoff = 0.5)
-   acc6 <- conf_matrix(y,X,alpha = 0.5, cutoff = 0.6)
-   acc7 <- conf_matrix(y,X,alpha = 0.5, cutoff = 0.7)
-   acc8 <- conf_matrix(y,X,alpha = 0.5, cutoff = 0.8)
-   acc9 <- conf_matrix(y,X,alpha = 0.5, cutoff = 0.9)
+   acc1 <- conf_matrix(y,X,alpha, cutoff = 0.1)
+   acc2 <- conf_matrix(y,X,alpha, cutoff = 0.2)
+   acc3 <- conf_matrix(y,X,alpha, cutoff = 0.3)
+   acc4 <- conf_matrix(y,X,alpha, cutoff = 0.4)
+   acc5 <- conf_matrix(y,X,alpha, cutoff = 0.5)
+   acc6 <- conf_matrix(y,X,alpha, cutoff = 0.6)
+   acc7 <- conf_matrix(y,X,alpha, cutoff = 0.7)
+   acc8 <- conf_matrix(y,X,alpha, cutoff = 0.8)
+   acc9 <- conf_matrix(y,X,alpha, cutoff = 0.9)
    accuracy <- cbind(acc1$Accuracy, acc2$Accuracy, acc3$Accuracy, acc4$Accuracy, acc5$Accuracy, acc6$Accuracy, acc7$Accuracy, acc8$Accuracy, acc9$Accuracy)
-   plot(cut_off, accuracy)
+   plot(cut_off, accuracy, main= "Accuracy vs Cutoff value", xlab = "Cutoff", ylab = "Accuracy")
    lines(cut_off, accuracy)
 
   }
@@ -186,7 +186,6 @@ return(list("Confusion Matrix" = cm, "Prevalence" = prev, "Accuracy" = acc, "Sen
   #' @description This function shows a visual of the logistic regression
   #' @param y A \code{double} value of the vector containing the response of interest.
   #' @param X An \eqn{n \times p} \code{double} value of the matrix containing the values of the predictors.
-  #' @param beta A \code{double} value that has previously been found with the ls_optim function.
   #' @return A \code{list} containing the following objects:
   #' \describe{
   #'  \item{model}{fit of the logistic regression model}
@@ -195,7 +194,7 @@ return(list("Confusion Matrix" = cm, "Prevalence" = prev, "Accuracy" = acc, "Sen
   #' }
   #' @author Kayla Gallman
   #' @export
-  log_curve<- function(X, y, beta)
+  log_curve<- function(X, y)
   {
 
     #fit logistic regression model
@@ -208,7 +207,7 @@ return(list("Confusion Matrix" = cm, "Prevalence" = prev, "Accuracy" = acc, "Sen
     p <- as.vector((model$beta_hat[1,])%*%(X))
 
     #plot logistic regression curve
-    plot(y ~ X, col="steelblue")
+    plot(y ~ X, col="steelblue", main = "Logistic Regression Curve", xlab= "X", ylab = "p")
     lines(p ~ X)
 
   }
