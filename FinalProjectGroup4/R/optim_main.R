@@ -97,20 +97,20 @@ bootstrap_ci <- function(y, X, alpha = .05, rounds = 20)
 #' @export
   conf_matrix <- function(y, X, alpha = .05, cutoff = 0.5)
   {
-  
-    
+
+
   int_coeff <- mean(bootstrap_ci(y, X, alpha)$"Bootstrap Confidence Interval For Intercept Coefficient")
   slope_coeff <- mean(bootstrap_ci(y, X, alpha)$"Bootstrap Confidence Interval For Slope Coefficient")
-  
+
   log_odds <- int_coeff + slope_coeff * X
   probabilities <- exp(log_odds)/(1+exp(log_odds))
     predict <- ifelse(probabilities > cutoff, yes = 1, no = 0)
-   
+
     tp <- 0 # Number of true positives
     fn <- 0 # Number of false negatives
     fp <- 0 # Number of false positives
     tn <- 0 # Number of true negatives
-     
+
     for (i in 1:length(y))
       {
       if (y[i] < .5 & predict[i] < .5)
@@ -130,14 +130,14 @@ bootstrap_ci <- function(y, X, alpha = .05, rounds = 20)
         fn <- fn +1
       }
     }
-  
+
     row1 <- c(tp, fn)
     row2 <- c(fp, tn)
     cm <-  rbind(row1, row2)# confusion matrix
     lab <- c(1,0)
     rownames(cm) <- lab
     colnames(cm) <- lab
-    
+
   prev <- (tp+fp)/(tp+fp+fn+tn)
   acc <- (tp+tn)/(tp+fp+tn+fn)
   tpr <- tp/(tp+fn)
@@ -149,13 +149,33 @@ bootstrap_ci <- function(y, X, alpha = .05, rounds = 20)
 return(list("Confusion Matrix" = cm, "Prevalence" = prev, "Accuracy" = acc, "Sensitivity" = tpr, "Specificity" = tnr, "False Discovery Rate" = fdr, "Diagnostic Odds Ratio" = dor))
   }
 
-  plot_metrics <- function()
+
+  #' Create a plot of accuracy from a confusion matrix
+  #' @description This function shows plot of accuracy from a confusion matrix evaluated over a grid of cut-off values for prediction going from 0.1 to 0.9
+  #' @param y A \code{double} value of the vector containing the response of interest.
+  #' @param X An \eqn{n \times p} \code{double} value of the matrix containing the values of the predictors.
+  #' @param alpha A \code{double} value indicating the significance level of the confidence intervals for the logistic regression coefficients.
+  #' @return A \code{list} containing the following objects:
+  #' \describe{
+  #'  \item{model}{}
+  #' }
+  #' @author Kayla Gallman
+  #' @export
+  plot_metrics <- function(y, X, alpha = 0.5)
   {
 
    cut_off <- seq(0.1, 0.9, by = 0.1)
+   for (i in 1:length(cut_off)){
+     co <- cut_off[i]
+   Confusion <- conf_matrix(y,X, alpha = 0.5, cutoff = co)
+   }
+   plot(cut_off, Confusion$Accuracy)
 
   }
 
+  set.seed(1)
+  y <- sample(c(0,1), size = 100, replace = TRUE)
+  X <- round(runif(100, 18, 80))
 
 
   #' Create a fitted logistic curve
