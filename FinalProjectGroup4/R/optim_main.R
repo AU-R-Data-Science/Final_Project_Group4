@@ -99,31 +99,41 @@ bootstrap_ci <- function(alpha, rounds = 20)
 return(list("Prevalence" = prev, "Accuracy" = acc, "Sensitivity" = tpr, "Specificity" = tnr, "False Discovery Rate" = fdr, "Diagnostic Odds Ratio" = dor))
   }
 
-  set.seed(1)
-  y <- sample(c(0,1), size = 100, replace = TRUE)
-  X <- round(runif(100, 18, 80))
-
-  log_curve<- function()
+  plot_metrics <- function()
   {
 
-    #1/exp(-Bx)
+   cut_off <- seq(0.1, 0.9, by = 0.1)
+
+  }
+
+
+
+  #' Create a fitted logistic curve
+  #' @description This function shows a visual of the logistic regression
+  #' @param y A \code{double} value of the vector containing the response of interest.
+  #' @param X An \eqn{n \times p} \code{double} value of the matrix containing the values of the predictors.
+  #' @param beta A \code{double} value that has previously been found with the ls_optim function.
+  #' @return A \code{list} containing the following objects:
+  #' \describe{
+  #'  \item{model}{fit of the logistic regression model}
+  #' }
+  #' @author Kayla Gallman
+  #' @export
+  log_curve<- function(X, y, beta)
+  {
 
     #fit logistic regression model
-    model <- glm(y ~ X, family = "binomial")
+    model <- ls_optim(y,X)
 
     #define new data frame that contains predictor variable
     newdata <- data.frame(X=seq(min(X), max(X),len=500))
 
     #use fitted model to predict values of vs
-    newdata$y <- predict(model, newdata, type="response")
+
+    p <- 1/exp(-y*X)
 
     #plot logistic regression curve
     plot(y ~ X, col="steelblue")
     lines(y ~ X, newdata, lwd=2)
-
-  }
-
-  plot_metrics <- function()
-  {
 
   }
