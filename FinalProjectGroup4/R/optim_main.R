@@ -48,17 +48,33 @@ ls_optim <- function(y, X)
   return(out)
 }
 
-
-bootstrap_ci <- function(alpha, rounds = 20)
+#' Estimate confidence intervals for the coefficients of logistic regression
+#' @description This function bootstraps the input data to create sample populations to estimate the coefficients of logistic regression.
+#' @param y A \code{double} value of the vector containing the response of interest.
+#' @param X An \eqn{n \times p} \code{double} value of the matrix containing the values of the predictors.
+#' @param alpha A \code{double} value indicating the significance level of the confidence intervals.
+#' @param rounds A \code{double} value indicating how many times to perform the bootstrap.
+#' @return A \code{list} containing the following objects:
+#' \describe{
+#'  \item{boot_ci_int}{The estimated confidence interval for the coefficient of the intercept}
+#'  \item{boot_ci_slope}{The estimated confidence interval for the coefficient of the slope}
+#' }
+#' @author Micheal Stewart Jackson
+#' @export
+bootstrap_ci <- function(y, X, alpha = .05, rounds = 20)
 {
-  beta_mat <- matrix(NA, B, 2)
+  beta_mat <- matrix(NA, rounds, 2)
+  data <- data.frame("y" = y, "X" = X)
     for (b in 1:rounds)
     {
-     boot_data <- data[sample(1:nrows(data), nrows(data), replace = TRUE), ]
-     beta_mat[b, ] <- lm(y~x, data = boot_data)$coefficients
+     boot_data <- data[sample(1:nrow(data), nrow(data), replace = TRUE), ]
+     y2 <- boot_data[ , 1]
+     X2 <- boot_data[ , 2]
+     beta_mat[b, ] <- ls_optim(y2, X2)$beta_hat$par
     }
-
-  return(list(bootstrap_ci = boot_ci))
+  boot_ci_int <- quantile(beta_mat[ , 1], c(alpha/2, 1-alpha/2))
+  boot_ci_slope <- quantile(beta_mat[ , 2], c(alpha/2, 1-alpha/2))
+  return(list("Bootstrap Confidence Interval For Intercept Coefficient"=boot_ci_int, "Bootstrap Confidence Interval For Slope Coefficient"=boot_ci_slope))
 }
 
 #' Create a confusion matrix and output its metrics
@@ -68,6 +84,7 @@ bootstrap_ci <- function(alpha, rounds = 20)
 #' @param cutoff A \code{double} value that sets the probability which determines the predicticted classification of the data set.
 #' @return A \code{list} containing the following objects:
 #' \describe{
+#'  \item{Confusion Matrix}{The confusion matrix for the logistic regression}
 #'  \item{Prevalence}{The percentage of positive cases in the data set}
 #'  \item{Accuracy}{The percentage of cases predicted correctly by the model}
 #'  \item{Sensitivity}{The percentage of positive cases predicted correctly by the model}
@@ -77,17 +94,47 @@ bootstrap_ci <- function(alpha, rounds = 20)
 #' }
 #' @author Micheal Stewart Jackson
 #' @export
-  conf_matrix <- function(y, X, cutoff = 0.5)
+  conf_matrix <- function(y, X, alpha = .05, cutoff = 0.5)
   {
-  ls_optim(y, X)
-    predict <- ifelse(beta_est > cutoff, yes = 1, no = 0)
-  cm <- table(y, predict) # confusion matrix
-
-  tp <- cm[1, 1] # Number of true positives
-  fn <- cm[1, 2] # Number of false negatives
-  fp <- cm[2, 1] # Number of false positives
-  tn <- cm[2, 2] # Number of true negatives
-
+  int_coeff <- mean(bootstrap_ci(y, X, alpha)$"Bootstrap Confidence Interval For Intercept Coefficient")
+  slope_coeff <- mean(bootstrap_ci(y, X, alpha)$"Bootstrap Confidence Interval For Slope Coefficient")
+  
+  log_odds <- int_coeff + slope_coeff * X
+  probabilities <- exp(log_odds)/(1+exp(log_odds))
+    predict <- ifelse(probabilities > cutoff, yes = 1, no = 0)
+   
+    tp <- 0 # Number of true positives
+    fn <- 0 # Number of false negatives
+    fp <- 0 # Number of false positives
+    tn <- 0 # Number of true negatives
+     
+    for (i in 1:length(y))
+      {
+      if (y[i] < .5 & predict[i] < .5)
+        {
+        tn <- tn +1
+      }
+      if (y[i] < .5 & predict[i] > .5)
+        {
+        fp <- fp +1
+      }
+      if (y[i] > .5 & predict[i] > .5)
+        {
+        tp <- tp +1
+      }
+      if (y[i] > .5 & predict[i] < .5)
+      {
+        fn <- fn +1
+      }
+    }
+  
+    row1 <- c(tp, fn)
+    row2 <- c(fp, tn)
+    cm <-  rbind(row1, row2)# confusion matrix
+    lab <- c(1,0)
+    rownames(cm) <- lab
+    colnames(cm) <- lab
+    
   prev <- (tp+fp)/(tp+fp+fn+tn)
   acc <- (tp+tn)/(tp+fp+tn+fn)
   tpr <- tp/(tp+fn)
@@ -96,7 +143,7 @@ bootstrap_ci <- function(alpha, rounds = 20)
   dor <- (tpr/(1-tnr))/((1-tpr)/tnr)
 
 
-return(list("Prevalence" = prev, "Accuracy" = acc, "Sensitivity" = tpr, "Specificity" = tnr, "False Discovery Rate" = fdr, "Diagnostic Odds Ratio" = dor))
+return(list("Confusion Matrix" = cm, "Prevalence" = prev, "Accuracy" = acc, "Sensitivity" = tpr, "Specificity" = tnr, "False Discovery Rate" = fdr, "Diagnostic Odds Ratio" = dor))
   }
 
   plot_metrics <- function()
