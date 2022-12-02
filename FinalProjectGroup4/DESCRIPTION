@@ -3,7 +3,7 @@ Type: Package
 Title: Logistic Regression Through Numerical Optimization
 Version: 0.1.0
 Author: Michael Jackson, Kayla Gallman, Mauren Baker
-Maintainer: Group 4
+Maintainer: Mauren Baker <lmbaker413@gmail.com>
 Description: This package creates a function which performs logistic regression through numerical optimization.
   It also contains functionality for plotting regression models and confusion matrices.
 License: NA

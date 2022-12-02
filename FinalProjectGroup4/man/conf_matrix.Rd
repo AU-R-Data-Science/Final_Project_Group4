@@ -4,18 +4,21 @@
 \alias{conf_matrix}
 \title{Create a confusion matrix and output its metrics}
 \usage{
-conf_matrix(y, X, cutoff = 0.5)
+conf_matrix(y, X, alpha = 0.05, cutoff = 0.5)
 }
 \arguments{
 \item{y}{A \code{double} value of the vector containing the response of interest.}
 
 \item{X}{An \eqn{n \times p} \code{double} value of the matrix containing the values of the predictors.}
 
+\item{alpha}{A \code{double} value indicating the significance level of the confidence intervals for the logistic regression coefficients.}
+
 \item{cutoff}{A \code{double} value that sets the probability which determines the predicticted classification of the data set.}
 }
 \value{
 A \code{list} containing the following objects:
 \describe{
+ \item{Confusion Matrix}{The confusion matrix for the logistic regression}
  \item{Prevalence}{The percentage of positive cases in the data set}
  \item{Accuracy}{The percentage of cases predicted correctly by the model}
  \item{Sensitivity}{The percentage of positive cases predicted correctly by the model}
